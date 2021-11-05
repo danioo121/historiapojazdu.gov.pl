@@ -27,7 +27,7 @@ class HistoriaPojazdu:
 
 	def search(self):
 
-		date_obj = datetime.strptime(f'1802{self.rocznik}', "%d%m%Y")
+		date_obj = datetime.strptime(f'0101{self.rocznik}', "%d%m%Y")
 
 		while int(date_obj.strftime('%Y')) == self.rocznik:
 
