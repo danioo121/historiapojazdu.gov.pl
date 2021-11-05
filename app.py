@@ -48,7 +48,7 @@ class HistoriaPojazdu:
 			data_rejestracji.send_keys(Keys.HOME)
 			data_rejestracji.send_keys(date_str)
 
-			submit = self.driver.find_element_by_xpath('/html/body/main/div/div/div/div/div/div/div/div/div/section[1]/form/fieldset/div/input')
+			submit = self.driver.find_element_by_id('_historiapojazduportlet_WAR_historiapojazduportlet_:btnSprawdz')
 			submit.click()
 
 			if self.driver.page_source.lower().find('oś czasu') > -1:
