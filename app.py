@@ -36,8 +36,6 @@ class HistoriaPojazdu:
 
 			self.driver.get(self.url)
 
-			time.sleep(1)
-
 			rejestracja = self.driver.find_element_by_id('_historiapojazduportlet_WAR_historiapojazduportlet_:rej')
 			rejestracja.clear()
 			rejestracja.send_keys(self.rejestracja)
@@ -53,8 +51,6 @@ class HistoriaPojazdu:
 
 			submit = self.driver.find_element_by_xpath('/html/body/main/div/div/div/div/div/div/div/div/div/section[1]/form/fieldset/div/input')
 			submit.click()
-
-			time.sleep(2)
 
 			if self.driver.page_source.lower().find('oś czasu') > -1:
 				return date_str
