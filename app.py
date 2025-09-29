@@ -1,67 +1,30 @@
-import car_data
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
+from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
 
-class HistoriaPojazdu:
+def znajdz_d1r(rejestracja, vin, rocznik):
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
 
-	def __init__(self, rejestracja, vin, rocznik, options=[]):
+        url = 'https://historiapojazdu.gov.pl/'
+        date_obj = datetime.strptime(f'0101{rocznik}', "%d%m%Y")
 
-		self.rejestracja = rejestracja
-		self.vin = vin
-		self.rocznik = rocznik
+        while int(date_obj.strftime('%Y')) == rocznik:
+            date_str = date_obj.strftime("%d%m%Y")
+            page.goto(url)
 
-		self.url = 'https://historiapojazdu.gov.pl/'
-		
-		chrome_options = Options()
+            page.fill('input[id*=":rej"]', rejestracja)
+            page.fill('input[id*=":vin"]', vin)
+            page.fill('input[id*=":data"]', date_str)
+            page.click('input[id*=":btnSprawdz"]')
 
-		for option in options:
-			chrome_options.add_argument(option)
+            page.wait_for_timeout(3000)  # poczekaj 3 sekundy
 
-		self.driver = webdriver.Chrome(options=chrome_options)
+            if 'oś czasu' in page.content().lower():
+                browser.close()
+                return date_str
 
-	def closeBrowser(self):
+            date_obj += timedelta(days=1)
 
-		self.driver.close()
-
-	def search(self):
-
-		date_obj = datetime.strptime(f'0101{self.rocznik}', "%d%m%Y")
-
-		while int(date_obj.strftime('%Y')) == self.rocznik:
-
-			date_str = date_obj.strftime("%d%m%Y")
-
-			self.driver.get(self.url)
-
-			rejestracja = self.driver.find_element_by_id('_historiapojazduportlet_WAR_historiapojazduportlet_:rej')
-			rejestracja.clear()
-			rejestracja.send_keys(self.rejestracja)
-
-			vin = self.driver.find_element_by_id('_historiapojazduportlet_WAR_historiapojazduportlet_:vin')
-			vin.clear()
-			vin.send_keys(self.vin)
-
-			data_rejestracji = self.driver.find_element_by_id('_historiapojazduportlet_WAR_historiapojazduportlet_:data')
-			data_rejestracji.clear()
-			data_rejestracji.send_keys(Keys.HOME)
-			data_rejestracji.send_keys(date_str)
-
-			submit = self.driver.find_element_by_id('_historiapojazduportlet_WAR_historiapojazduportlet_:btnSprawdz')
-			submit.click()
-
-			if self.driver.page_source.lower().find('oś czasu') > -1:
-				return date_str
-			else:
-				date_obj = date_obj + timedelta(days=1)
-
-		return False
-
-if __name__ == '__main__':
-
-	h = HistoriaPojazdu(car_data.rejestracja, car_data.vin, car_data.rok_rejestracji, ['--incognito'])
-	
-	print(h.search())
-
-	h.closeBrowser()
+        browser.close()
+        return False
